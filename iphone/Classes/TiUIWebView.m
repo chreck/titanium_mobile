@@ -193,6 +193,19 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	{
 		[request setValue:basicCredentials forHTTPHeaderField:@"Authorization"];
 	}
+    
+    NSDictionary *requestHeaders = [[self proxy] valueForKey:@"requestHeaders"];
+    
+    if(requestHeaders!=nil)
+    {
+        // set the new headers
+        for(NSString *key in [requestHeaders allKeys]){
+            NSString *value = [requestHeaders objectForKey:key];
+            NSLog(@"[INFO] loadURLRequest header key %@ value %@", key, value);
+            [request addValue:value forHTTPHeaderField:key];
+        }
+    }
+    
 	[[self webview] loadRequest:request];
 }
 
