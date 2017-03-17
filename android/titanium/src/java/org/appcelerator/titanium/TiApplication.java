@@ -115,6 +115,34 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	public static AtomicBoolean isActivityTransition = new AtomicBoolean(false);
 	protected static ArrayList<ActivityTransitionListener> activityTransitionListeners = new ArrayList<ActivityTransitionListener>();
 	protected static TiWeakList<Activity> activityStack = new TiWeakList<Activity>();
+	
+	/*
+     * No synchronization required since bind() and unbind() are always called from
+     * the same thread (the "main thread" or the "UI thread")
+     * 
+     * This is because bind() is always called from an Activity's onStart(),
+     *  and unbind() always from an Activity's onStop().  
+     */
+    private int mBoundCount = 0;
+    private boolean mBoundForFirstTime = true; // prevents sending the 'resumed' event on app start.
+    
+    protected void bind(){
+        if(mBoundCount == 0 && !mBoundForFirstTime){
+        	fireAppEvent("resume", null);
+            fireAppEvent("resumed", null);
+        }
+        mBoundForFirstTime = false;
+        mBoundCount ++;
+    }
+    
+    protected void unbind(){
+        mBoundCount --;
+
+        if(mBoundCount == 0){
+        	fireAppEvent("pause", null);
+        	fireAppEvent("paused", null);
+        }
+    }    
 
 	public static interface ActivityTransitionListener
 	{
