@@ -885,6 +885,7 @@ public abstract class TiApplication extends Application implements KrollApplicat
 
 	public void dispose()
 	{
+		mBoundForFirstTime = true;	
 		TiActivityWindows.dispose();
 		TiActivitySupportHelpers.dispose();
 		TiFileHelper.getInstance().destroyTempFiles();
