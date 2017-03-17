@@ -274,6 +274,7 @@ public class TiCompositeLayout extends ViewGroup
 
 		for(int i = 0; i < childCount; i++) {
 			View child = getChildAt(i);
+			if (child != null) {
 			if (child.getVisibility() != View.GONE) {
 				constrainChild(child, w, wMode, h, hMode);
 			}
@@ -312,6 +313,7 @@ public class TiCompositeLayout extends ViewGroup
 				} else {
 					maxHeight = Math.max(maxHeight, childHeight);
 				}
+			}
 			}
 		}
 
@@ -482,10 +484,12 @@ public class TiCompositeLayout extends ViewGroup
 			if (count > 1) { // No need to sort one item.
 				for(int i = 0; i < count; i++) {
 					View child = getChildAt(i);
+					if (child != null) {
 					TiCompositeLayout.LayoutParams params =
 						(TiCompositeLayout.LayoutParams) child.getLayoutParams();
 					params.index = i;
 					viewSorter.add(child);
+					}
 				}
 
 				detachAllViewsFromParent();
@@ -507,6 +511,7 @@ public class TiCompositeLayout extends ViewGroup
 
 		for (int i = 0; i < count; i++) {
 			View child = getChildAt(i);
+			if (child != null) {
 			TiCompositeLayout.LayoutParams params =
 				(TiCompositeLayout.LayoutParams) child.getLayoutParams();
 			if (child.getVisibility() != View.GONE) {
@@ -578,6 +583,7 @@ public class TiCompositeLayout extends ViewGroup
 				if (params.optionTop != null) {
 					currentHeight += params.optionTop.getAsPixels(this);
 				}
+			}
 			}
 		}
 
@@ -693,6 +699,7 @@ public class TiCompositeLayout extends ViewGroup
 
 		for (i = currentIndex; i < getChildCount(); i++) {
 			View child = getChildAt(i);
+			if (child != null) {
 			// Calculate row width/height with padding
 			rowWidth += child.getMeasuredWidth() + getViewWidthPadding(child, getWidth());
 			rowHeight = child.getMeasuredHeight() + getViewHeightPadding(child, parentHeight);
@@ -707,6 +714,7 @@ public class TiCompositeLayout extends ViewGroup
 
 			if (horizontalLayoutLineHeight < rowHeight) {
 				horizontalLayoutLineHeight = rowHeight;
+			}
 			}
 		}
 
