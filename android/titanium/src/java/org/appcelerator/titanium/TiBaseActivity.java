@@ -1366,6 +1366,8 @@ public abstract class TiBaseActivity extends AppCompatActivity
 			}
 			return;
 		}
+		
+		tiApp.bind();
 
 		updateTitle();
 
@@ -1433,6 +1435,10 @@ public abstract class TiBaseActivity extends AppCompatActivity
 				}
 			}
 		}
+		
+		TiApplication tiApp = getTiApp();		
+		tiApp.unbind();
+		
 		KrollRuntime.suggestGC();
 	}
 
