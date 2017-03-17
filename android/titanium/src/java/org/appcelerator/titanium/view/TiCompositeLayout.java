@@ -299,46 +299,48 @@ public class TiCompositeLayout extends ViewGroup
 
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
-            if (child.getVisibility() != View.GONE) {
-                constrainChild(child, w, wMode, h, hMode, wRemain);
-            }
-
-            int childWidth = child.getMeasuredWidth();
-            int childHeight = child.getMeasuredHeight();
-            if (child.getVisibility() != View.GONE) {
-                childWidth += getViewWidthPadding(child, w);
-                childHeight += getViewHeightPadding(child, h);
-            }
-
-            if (isHorizontalArrangement()) {
-                if (enableHorizontalWrap) {
-
-                    if ((horizontalRowWidth + childWidth) > w) {
-                        horizontalRowWidth = childWidth;
-                        maxHeight += horizontalRowHeight;
-                        horizontalRowHeight = childHeight;
-                        wRemain = w;
-                    } else {
-                        horizontalRowWidth += childWidth;
-                        maxWidth = Math.max(maxWidth, horizontalRowWidth);
-                        wRemain -= childWidth;
-                    }
-
-                } else {
-                    // For horizontal layout without wrap, just keep on adding
-                    // the widths since it doesn't wrap
-                    maxWidth += childWidth;
-                }
-                horizontalRowHeight = Math.max(horizontalRowHeight, childHeight);
-
-            } else {
-                maxWidth = Math.max(maxWidth, childWidth);
-
-                if (isVerticalArrangement()) {
-                    maxHeight += childHeight;
-                } else {
-                    maxHeight = Math.max(maxHeight, childHeight);
-                }
+            if (child != null) {
+	            if (child.getVisibility() != View.GONE) {
+	                constrainChild(child, w, wMode, h, hMode, wRemain);
+	            }
+	
+	            int childWidth = child.getMeasuredWidth();
+	            int childHeight = child.getMeasuredHeight();
+	            if (child.getVisibility() != View.GONE) {
+	                childWidth += getViewWidthPadding(child, w);
+	                childHeight += getViewHeightPadding(child, h);
+	            }
+	
+	            if (isHorizontalArrangement()) {
+	                if (enableHorizontalWrap) {
+	
+	                    if ((horizontalRowWidth + childWidth) > w) {
+	                        horizontalRowWidth = childWidth;
+	                        maxHeight += horizontalRowHeight;
+	                        horizontalRowHeight = childHeight;
+	                        wRemain = w;
+	                    } else {
+	                        horizontalRowWidth += childWidth;
+	                        maxWidth = Math.max(maxWidth, horizontalRowWidth);
+	                        wRemain -= childWidth;
+	                    }
+	
+	                } else {
+	                    // For horizontal layout without wrap, just keep on adding
+	                    // the widths since it doesn't wrap
+	                    maxWidth += childWidth;
+	                }
+	                horizontalRowHeight = Math.max(horizontalRowHeight, childHeight);
+	
+	            } else {
+	                maxWidth = Math.max(maxWidth, childWidth);
+	
+	                if (isVerticalArrangement()) {
+	                    maxHeight += childHeight;
+	                } else {
+	                    maxHeight = Math.max(maxHeight, childHeight);
+	                }
+	            }
             }
         }
 
@@ -533,10 +535,12 @@ public class TiCompositeLayout extends ViewGroup
             if (count > 1) { // No need to sort one item.
                 for (int i = 0; i < count; i++) {
                     View child = getChildAt(i);
-                    TiCompositeLayout.LayoutParams params =
-                            (TiCompositeLayout.LayoutParams) child.getLayoutParams();
-                    params.index = i;
-                    viewSorter.add(child);
+                    if (child != null) {
+	                    TiCompositeLayout.LayoutParams params =
+	                            (TiCompositeLayout.LayoutParams) child.getLayoutParams();
+	                    params.index = i;
+	                    viewSorter.add(child);
+                    }
                 }
 
                 detachAllViewsFromParent();
@@ -558,91 +562,93 @@ public class TiCompositeLayout extends ViewGroup
 
         for (int i = 0; i < count; i++) {
             View child = getChildAt(i);
-            TiCompositeLayout.LayoutParams params =
-                    (TiCompositeLayout.LayoutParams) child.getLayoutParams();
-            if (child.getVisibility() != View.GONE) {
-                // Dimension is required from Measure. Positioning is determined
-                // here.
-
-                int childMeasuredHeight = child.getMeasuredHeight();
-                int childMeasuredWidth = child.getMeasuredWidth();
-
-                if (isHorizontalArrangement()) {
-                    if (i == 0) {
-                        horizontalLayoutCurrentLeft = left;
-                        horizontalLayoutLineHeight = 0;
-                        horizontalLayoutTopBuffer = 0;
-                        horizontalLayoutLastIndexBeforeWrap = 0;
-                        horiztonalLayoutPreviousRight = 0;
-                        updateRowForHorizontalWrap(right, i);
-                    }
-                    computeHorizontalLayoutPosition(params, childMeasuredWidth,
-                            childMeasuredHeight, right, top, bottom, horizontal, vertical, i);
-
-                } else {
-                    // Try to calculate width/height from pins, and default to
-                    // measured width/height. We have to do this in
-                    // onLayout since we can't get the correct top, bottom,
-                    // left, and right values inside constrainChild().
-                    childMeasuredHeight = calculateHeightFromPins(params, top, bottom, getHeight(),
-                            childMeasuredHeight);
-                    childMeasuredWidth = calculateWidthFromPins(params, left, right, getWidth(),
-                            childMeasuredWidth);
-
-                    computePosition(this, params.optionLeft, params.optionCenterX,
-                            params.optionRight, childMeasuredWidth, left, right, horizontal);
-                    if (isVerticalArrangement()) {
-                        computeVerticalLayoutPosition(currentHeight, params.optionTop,
-                                childMeasuredHeight, top, vertical,
-                                bottom);
-                        // Include bottom in height calculation for vertical
-                        // layout (used as padding)
-                        TiDimension optionBottom = params.optionBottom;
-                        if (optionBottom != null) {
-                            currentHeight += optionBottom.getAsPixels(this);
-                        }
-                    } else {
-                        computePosition(this, params.optionTop, params.optionCenterY,
-                                params.optionBottom, childMeasuredHeight, top, bottom, vertical);
-                    }
-                }
-
-                if (Log.isDebugModeEnabled()) {
-                    Log.d(TAG, child.getClass().getName() + " {" + horizontal[0] + ","
-                            + vertical[0] + "," + horizontal[1] + ","
-                            + vertical[1] + "}", Log.DEBUG_MODE);
-                }
-
-                int newWidth = horizontal[1] - horizontal[0];
-                int newHeight = vertical[1] - vertical[0];
-                // If the old child measurements do not match the new
-                // measurements that we calculated, then update the
-                // child measurements accordingly
-                if (newWidth != child.getMeasuredWidth()
-                        || newHeight != child.getMeasuredHeight()) {
-                    int newWidthSpec = MeasureSpec.makeMeasureSpec(newWidth, MeasureSpec.EXACTLY);
-                    int newHeightSpec = MeasureSpec.makeMeasureSpec(newHeight, MeasureSpec.EXACTLY);
-                    child.measure(newWidthSpec, newHeightSpec);
-                }
-
-                if (!TiApplication.getInstance().isRootActivityAvailable()) {
-                    Activity currentActivity = TiApplication.getAppCurrentActivity();
-                    if (currentActivity instanceof TiLaunchActivity) {
-                        if (!((TiLaunchActivity) currentActivity).isJSActivity()) {
-                            Log.w(TAG,
-                                    "The root activity is no longer available.  Skipping layout pass.",
-                                    Log.DEBUG_MODE);
-                            return;
-                        }
-                    }
-                }
-
-                child.layout(horizontal[0], vertical[0], horizontal[1], vertical[1]);
-
-                currentHeight += newHeight;
-                if (params.optionTop != null) {
-                    currentHeight += params.optionTop.getAsPixels(this);
-                }
+            if (child != null) {
+	            TiCompositeLayout.LayoutParams params =
+	                    (TiCompositeLayout.LayoutParams) child.getLayoutParams();
+	            if (child.getVisibility() != View.GONE) {
+	                // Dimension is required from Measure. Positioning is determined
+	                // here.
+	
+	                int childMeasuredHeight = child.getMeasuredHeight();
+	                int childMeasuredWidth = child.getMeasuredWidth();
+	
+	                if (isHorizontalArrangement()) {
+	                    if (i == 0) {
+	                        horizontalLayoutCurrentLeft = left;
+	                        horizontalLayoutLineHeight = 0;
+	                        horizontalLayoutTopBuffer = 0;
+	                        horizontalLayoutLastIndexBeforeWrap = 0;
+	                        horiztonalLayoutPreviousRight = 0;
+	                        updateRowForHorizontalWrap(right, i);
+	                    }
+	                    computeHorizontalLayoutPosition(params, childMeasuredWidth,
+	                            childMeasuredHeight, right, top, bottom, horizontal, vertical, i);
+	
+	                } else {
+	                    // Try to calculate width/height from pins, and default to
+	                    // measured width/height. We have to do this in
+	                    // onLayout since we can't get the correct top, bottom,
+	                    // left, and right values inside constrainChild().
+	                    childMeasuredHeight = calculateHeightFromPins(params, top, bottom, getHeight(),
+	                            childMeasuredHeight);
+	                    childMeasuredWidth = calculateWidthFromPins(params, left, right, getWidth(),
+	                            childMeasuredWidth);
+	
+	                    computePosition(this, params.optionLeft, params.optionCenterX,
+	                            params.optionRight, childMeasuredWidth, left, right, horizontal);
+	                    if (isVerticalArrangement()) {
+	                        computeVerticalLayoutPosition(currentHeight, params.optionTop,
+	                                childMeasuredHeight, top, vertical,
+	                                bottom);
+	                        // Include bottom in height calculation for vertical
+	                        // layout (used as padding)
+	                        TiDimension optionBottom = params.optionBottom;
+	                        if (optionBottom != null) {
+	                            currentHeight += optionBottom.getAsPixels(this);
+	                        }
+	                    } else {
+	                        computePosition(this, params.optionTop, params.optionCenterY,
+	                                params.optionBottom, childMeasuredHeight, top, bottom, vertical);
+	                    }
+	                }
+	
+	                if (Log.isDebugModeEnabled()) {
+	                    Log.d(TAG, child.getClass().getName() + " {" + horizontal[0] + ","
+	                            + vertical[0] + "," + horizontal[1] + ","
+	                            + vertical[1] + "}", Log.DEBUG_MODE);
+	                }
+	
+	                int newWidth = horizontal[1] - horizontal[0];
+	                int newHeight = vertical[1] - vertical[0];
+	                // If the old child measurements do not match the new
+	                // measurements that we calculated, then update the
+	                // child measurements accordingly
+	                if (newWidth != child.getMeasuredWidth()
+	                        || newHeight != child.getMeasuredHeight()) {
+	                    int newWidthSpec = MeasureSpec.makeMeasureSpec(newWidth, MeasureSpec.EXACTLY);
+	                    int newHeightSpec = MeasureSpec.makeMeasureSpec(newHeight, MeasureSpec.EXACTLY);
+	                    child.measure(newWidthSpec, newHeightSpec);
+	                }
+	
+	                if (!TiApplication.getInstance().isRootActivityAvailable()) {
+	                    Activity currentActivity = TiApplication.getAppCurrentActivity();
+	                    if (currentActivity instanceof TiLaunchActivity) {
+	                        if (!((TiLaunchActivity) currentActivity).isJSActivity()) {
+	                            Log.w(TAG,
+	                                    "The root activity is no longer available.  Skipping layout pass.",
+	                                    Log.DEBUG_MODE);
+	                            return;
+	                        }
+	                    }
+	                }
+	
+	                child.layout(horizontal[0], vertical[0], horizontal[1], vertical[1]);
+	
+	                currentHeight += newHeight;
+	                if (params.optionTop != null) {
+	                    currentHeight += params.optionTop.getAsPixels(this);
+	                }
+	            }
             }
         }
 
@@ -767,20 +773,22 @@ public class TiCompositeLayout extends ViewGroup
 
         for (i = currentIndex; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            // Calculate row width/height with padding
-            rowWidth += child.getMeasuredWidth() + getViewWidthPadding(child, getWidth());
-            rowHeight = child.getMeasuredHeight() + getViewHeightPadding(child, parentHeight);
-
-            if (rowWidth > maxRight) {
-                horizontalLayoutLastIndexBeforeWrap = i - 1;
-                return;
-
-            } else if (rowWidth == maxRight) {
-                break;
-            }
-
-            if (horizontalLayoutLineHeight < rowHeight) {
-                horizontalLayoutLineHeight = rowHeight;
+            if (child != null) {
+	            // Calculate row width/height with padding
+	            rowWidth += child.getMeasuredWidth() + getViewWidthPadding(child, getWidth());
+	            rowHeight = child.getMeasuredHeight() + getViewHeightPadding(child, parentHeight);
+	
+	            if (rowWidth > maxRight) {
+	                horizontalLayoutLastIndexBeforeWrap = i - 1;
+	                return;
+	
+	            } else if (rowWidth == maxRight) {
+	                break;
+	            }
+	
+	            if (horizontalLayoutLineHeight < rowHeight) {
+	                horizontalLayoutLineHeight = rowHeight;
+	            }
             }
         }
 
